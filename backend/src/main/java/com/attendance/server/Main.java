@@ -9,8 +9,21 @@ import java.net.InetSocketAddress;
 import java.util.concurrent.Executors;
 
 public class Main {
+    private static int getPort() {
+        String portEnv = System.getenv("PORT");
+        if (portEnv == null || portEnv.isBlank()) return 8080;
+        try {
+            return Integer.parseInt(portEnv.trim());
+        } catch (NumberFormatException ignored) {
+            return 8080;
+        }
+    }
+
     public static void main(String[] args) throws IOException {
-        HttpServer server = HttpServer.create(new InetSocketAddress(8080), 0);
+        int port = getPort();
+
+        // ✅ Mobile access ke liye
+        HttpServer server = HttpServer.create(new InetSocketAddress("0.0.0.0", port), 0);
 
         server.createContext("/api/token/generate",  new TokenGenerateHandler());
         server.createContext("/api/token/validate",  new TokenValidateHandler());
@@ -23,17 +36,19 @@ public class Main {
         server.setExecutor(Executors.newFixedThreadPool(10));
         server.start();
 
+        // ✅ Clean output (no encoding error)
         System.out.println("===========================================");
-        System.out.println("║  Anti-Proxy Attendance System  v1.0      ║");
-        System.out.println("║  Backend running on http://localhost:8080 ║");
-        System.out.println("╚===========================================╝");
+        System.out.println(" Anti-Proxy Attendance System v1.0 ");
+        System.out.println(" Backend running on port " + port + " ");
+        System.out.println("===========================================");
     }
 
     static class CorsPreflightHandler implements HttpHandler {
         @Override
         public void handle(HttpExchange exchange) throws IOException {
+            CorsUtil.addCorsHeaders(exchange);
+
             if ("OPTIONS".equalsIgnoreCase(exchange.getRequestMethod())) {
-                CorsUtil.addCorsHeaders(exchange);
                 exchange.sendResponseHeaders(204, -1);
             } else {
                 exchange.sendResponseHeaders(404, -1);

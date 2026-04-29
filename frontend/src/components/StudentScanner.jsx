@@ -29,6 +29,16 @@ export default function StudentScanner({ onBack }) {
       return;
     }
     try {
+      if (!window.isSecureContext) {
+        throw new Error(
+          'Camera requires a secure connection (HTTPS). On phone, open this app using HTTPS or localhost on the same device.'
+        );
+      }
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        throw new Error(
+          'Camera API not available in this browser/context. Try Chrome, allow camera permission, and use HTTPS.'
+        );
+      }
       const reader = new BrowserQRCodeReader();
       readerRef.current = reader;
       await reader.decodeFromVideoDevice(undefined, videoRef.current, (res) => {
