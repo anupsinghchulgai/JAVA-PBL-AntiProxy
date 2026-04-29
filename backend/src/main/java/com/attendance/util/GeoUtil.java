@@ -2,7 +2,8 @@ package com.attendance.util;
 
 public class GeoUtil {
     private static final double EARTH_RADIUS_METERS    = 6_371_000.0;
-    public  static final double GEOFENCE_RADIUS_METERS = 10.0;
+    // DEMO: loosen radius so students can be marked even if GPS accuracy differs.
+    public  static final double GEOFENCE_RADIUS_METERS = 5000.0; // 5km demo tolerance
 
     private GeoUtil() {}
 

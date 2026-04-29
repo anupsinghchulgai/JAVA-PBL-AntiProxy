@@ -4,8 +4,14 @@ export function useGeolocation() {
   const getPosition = useCallback(
     () =>
       new Promise((resolve, reject) => {
+        // DEMO fallback: if GPS permission/timing is blocked on phones/laptops,
+        // teacher QR must still be generated to show the flow.
+        const DEMO_LAT = 28.6139; // Delhi (demo only)
+        const DEMO_LNG = 77.2090; // demo only
+        const DEMO_ACCURACY_METERS = 5000;
+
         if (!navigator.geolocation) {
-          reject(new Error('Geolocation not supported'));
+          resolve({ lat: DEMO_LAT, lng: DEMO_LNG, accuracy: DEMO_ACCURACY_METERS });
           return;
         }
 
@@ -16,7 +22,7 @@ export function useGeolocation() {
         const timer = setTimeout(() => {
           if (settled) return;
           settled = true;
-          reject(new Error('GPS location timeout. Please allow Location permission and try again.'));
+          resolve({ lat: DEMO_LAT, lng: DEMO_LNG, accuracy: DEMO_ACCURACY_METERS });
         }, FAIL_MS);
 
         navigator.geolocation.getCurrentPosition(
@@ -39,7 +45,8 @@ export function useGeolocation() {
               2: 'Location unavailable.',
               3: 'Location request timed out.',
             };
-            reject(new Error(msgs[e.code] || 'Unknown location error.'));
+            // For demo: still resolve so teacher can generate QR.
+            resolve({ lat: DEMO_LAT, lng: DEMO_LNG, accuracy: DEMO_ACCURACY_METERS });
           },
           { enableHighAccuracy: false, timeout: 10000, maximumAge: 0 }
         );
